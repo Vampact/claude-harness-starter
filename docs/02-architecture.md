@@ -76,6 +76,8 @@ Each `critical/` rule should have a matching hook here. A hook is the *guarantee
 
 Each skill is a self-contained folder (typically with a `SKILL.md`) describing a repeatable, multi-step task. The model invokes a skill when that task comes up. Skills keep deep procedural know-how out of your rules and load it only when relevant.
 
+**How a skill is wired:** place it at `~/.claude/skills/<skill-name>/SKILL.md`. The YAML front matter at the top of `SKILL.md` — its `name` and especially its `description` — is what Claude matches against to decide when to invoke the skill, so the `description` should state the trigger precisely. No `settings.json` entry is required: the folder location plus the front matter *is* the registration. Supporting files (scripts, templates) can live alongside the `SKILL.md` in the same folder.
+
 ## The sync boundary (for multi-device users)
 
 If you sync `~/.claude/` across machines (see [03-customization-guide.md](03-customization-guide.md)), draw a clear line with `.gitignore`:

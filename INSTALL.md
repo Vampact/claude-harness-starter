@@ -35,7 +35,7 @@ If anything in those docs conflicts with what the user tells you about their set
 Before interviewing, settle two practical facts. A real install fails at the "last mile" when these are skipped.
 
 1. **Where is `~/.claude/`?** It is the user-level Claude Code config directory in the user's home folder (`~/.claude/` on macOS/Linux, `%USERPROFILE%\.claude\` on Windows). Confirm the actual path on this machine — do not assume.
-2. **What is already there?** **Inspect the directory yourself** — list `~/.claude/` and read any existing `CLAUDE.md`, `settings.json`, `rules/`, and `hooks/`. Do not rely solely on the user's memory of what they have.
+2. **What is already there?** **Inspect the directory yourself** — list `~/.claude/` and read any existing `CLAUDE.md`, `settings.json`, `rules/`, and `hooks/`. Do not rely solely on the user's memory of what they have. If the directory does not exist at all, that is fine — this is a brand-new user; you will create it during install, starting clean (no merge concerns).
 
 There is a real tension here — be consent-driven and not nosy, versus verify before you overwrite. Resolve it this way: **you may read existing config to avoid destroying it, but you still install nothing without consent.** Reading to protect is not the same as writing without permission. If the user said "I have nothing" but you find a `settings.json`, surface that gently and switch to merge mode (Step 6).
 
@@ -74,16 +74,17 @@ Go in an order that respects dependencies. A reasonable default order:
 3. **`rules/personal/critical/` + a paired hook** — a deterministic guardrail. Explain *why* it needs a hook: behavior rules alone leak, so a `PreToolUse`/`Stop` hook is the real defense. **Deploying a hook has mechanical steps — see "Deploying a hook" below.** Only offer guardrails the user actually wants enforced.
 4. **`rules/personal/workflow/`** — procedural rules loaded on a trigger.
 5. **`rules/personal/environment/`** — device/environment facts. **Gate this behind the multi-device answer and the sync prerequisite below.**
-6. **A skill** — for any deep, multi-step procedure the user described.
+6. **A skill** — for any deep, multi-step procedure the user described. Deploy it by placing the folder at `~/.claude/skills/<skill-name>/SKILL.md`; the YAML front-matter `description` is what Claude matches on to invoke it, so make it a precise trigger. No `settings.json` entry is needed — the folder location plus front matter is the wiring (see docs/02-architecture.md).
 
 ### Deploying a hook (do not skip these steps)
 
-A hook is not "installed" just by copying a rule. To make it actually run:
+A hook is not "installed" just by copying a rule. To make it actually run, **in this order**:
 
 1. **Copy the script** from `examples/hooks/<name>.example.js` into the user's `~/.claude/hooks/`, and **rename it to drop `.example`** (e.g. `protect-paths.js`). The example filename is not the runtime filename.
-2. **Confirm the runtime exists.** The example hooks are Node.js — verify `node` is installed and on PATH (`node --version`). If the user has no Node, the hook cannot run; say so rather than wiring a dead hook.
-3. **Wire it into `settings.json`** — see "Editing `settings.json`" below. The `command` must point at the deployed path (`~/.claude/hooks/protect-paths.js`), not the repo's `examples/` copy.
-4. **Test it before trusting it.** A guardrail you never verified is not a guardrail. See the test recipe at the bottom of [examples/hooks/protect-paths.example.js](examples/hooks/protect-paths.example.js): pipe a sample payload to the script and confirm it blocks (exit 2) the protected path and allows (exit 0) a normal one.
+2. **Fill the hook's own real values FIRST.** Many hooks have internal placeholders (e.g. `protect-paths.js` has a `PROTECTED_PATHS` list of `<PROTECTED_PATH_1>` tokens). Ask the user and replace these with real values *before* testing. This ordering matters: the example hook deliberately treats any path still starting with `<` as inert, so a test against an unfilled placeholder will **falsely pass (allow)** and give false confidence.
+3. **Confirm the runtime exists.** The example hooks are Node.js — verify `node` is installed and on PATH (`node --version`). If the user has no Node, the hook cannot run; say so rather than wiring a dead hook.
+4. **Test it before trusting it.** A guardrail you never verified is not a guardrail. Using the now-filled real paths, follow the test recipe at the bottom of [examples/hooks/protect-paths.example.js](examples/hooks/protect-paths.example.js): pipe a sample payload and confirm it blocks (exit 2) a protected path and allows (exit 0) a normal one. The recipe shows both a bash/Git-Bash and a PowerShell 7 form — use the one matching the user's shell.
+5. **Wire it into `settings.json`** *last, after the test passes* — see "Editing `settings.json`" below. The `command` must point at the deployed path (`~/.claude/hooks/protect-paths.js`), not the repo's `examples/` copy.
 
 ### Editing `settings.json`
 

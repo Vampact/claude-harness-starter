@@ -27,8 +27,9 @@ const path = require("path");
 // ---- Configure your protected paths here -----------------------------------
 // Use absolute paths. Anything at or under these locations is blocked for write.
 const PROTECTED_PATHS = [
-  "<PROTECTED_PATH_1>", // e.g. "/home/<USER>/.config/secrets"
-  "<PROTECTED_PATH_2>", // e.g. "/home/<USER>/important-do-not-touch"
+  // Replace with YOUR real absolute paths before use (and before testing).
+  "<PROTECTED_PATH_1>", // e.g. "/home/alice/.config/secrets"  or  "C:/Users/alice/secrets"
+  "<PROTECTED_PATH_2>", // e.g. "/home/alice/important-do-not-touch"
 ];
 
 // ---- Read the hook payload from stdin ---------------------------------------
@@ -110,19 +111,28 @@ process.exit(0);
 // =============================================================================
 //
 // HOW TO TEST (before you trust it with anything irreversible)
-//   A PreToolUse hook just reads a JSON payload on stdin and uses its exit code.
-//   So you can test it directly from a shell by piping a sample payload in.
-//   First fill in a real protected path in PROTECTED_PATHS above, then:
+//   A PreToolUse hook just reads a JSON payload on stdin and acts via its exit
+//   code, so you can test it from a shell by piping a sample payload in.
 //
-//   Expect BLOCK (exit 2, message on stderr):
-//     echo '{"tool_name":"Write","tool_input":{"file_path":"<PROTECTED_PATH_1>/x.txt"}}' | node protect-paths.js ; echo "exit=$?"
+//   IMPORTANT — fill PROTECTED_PATHS above with REAL paths FIRST. This hook
+//   treats any path starting with "<" as inert, so testing against an unfilled
+//   <PLACEHOLDER> will falsely ALLOW (exit 0) and give you false confidence.
+//   In the payloads below, replace /REAL/PROTECTED/PATH with the actual value
+//   you put in PROTECTED_PATHS.
 //
-//   Expect ALLOW (no output, exit 0):
+//   bash / zsh / Git Bash:
+//     # expect BLOCK -> exit 2, message on stderr
+//     echo '{"tool_name":"Write","tool_input":{"file_path":"/REAL/PROTECTED/PATH/x.txt"}}' | node protect-paths.js ; echo "exit=$?"
+//     # expect ALLOW -> no output, exit 0
 //     echo '{"tool_name":"Write","tool_input":{"file_path":"/tmp/ok.txt"}}' | node protect-paths.js ; echo "exit=$?"
+//     # expect ALLOW -> exit 0 (non-write tool, even on a protected path)
+//     echo '{"tool_name":"Read","tool_input":{"file_path":"/REAL/PROTECTED/PATH/x.txt"}}' | node protect-paths.js ; echo "exit=$?"
 //
-//   Expect ALLOW (exit 0) for a non-write tool, even on a protected path:
-//     echo '{"tool_name":"Read","tool_input":{"file_path":"<PROTECTED_PATH_1>/x.txt"}}' | node protect-paths.js ; echo "exit=$?"
+//   PowerShell 7 (Windows) — single-quote the JSON, read exit via $LASTEXITCODE:
+//     # expect BLOCK -> exit 2
+//     '{"tool_name":"Write","tool_input":{"file_path":"C:/REAL/PROTECTED/PATH/x.txt"}}' | node protect-paths.js ; "exit=$LASTEXITCODE"
+//     # expect ALLOW -> exit 0
+//     '{"tool_name":"Write","tool_input":{"file_path":"C:/Temp/ok.txt"}}' | node protect-paths.js ; "exit=$LASTEXITCODE"
 //
-//   On Windows PowerShell, use single quotes around the JSON and pipe similarly.
 //   If the BLOCK case does not exit 2, do NOT wire this hook up yet — fix it first.
 // =============================================================================
