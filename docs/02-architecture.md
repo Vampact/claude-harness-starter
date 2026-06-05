@@ -34,7 +34,9 @@ This is where the harness itself is wired, as opposed to where you write instruc
 - **Permissions** — which tools/commands are pre-allowed so you are not prompted repeatedly.
 - **Environment variables** — settings that shape the harness's behavior.
 
-Treat this file carefully when installing into an existing setup: **merge, never overwrite** (see [INSTALL.md](../INSTALL.md) Step 5).
+See [examples/settings.json.example](../examples/settings.json.example) for a concrete shape (a `PreToolUse` hook wired up, plus permissions and env), and [templates/settings.json.template](../templates/settings.json.template) for a blank skeleton. Note it is **strict JSON** — no comments, no trailing commas; a file that fails to parse disables your config.
+
+Treat this file carefully when installing into an existing setup: **merge keys, never overwrite the whole file** — preserve existing hooks, permissions, and env (see [INSTALL.md](../INSTALL.md), "Editing `settings.json`" in Step 4, and Step 6).
 
 ## `rules/` — the split rule library
 

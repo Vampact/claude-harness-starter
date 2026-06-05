@@ -108,3 +108,21 @@ process.exit(0);
 // matcher for the shell tool and inspect its command string. No single hook is
 // perfectly airtight — cover the paths that matter most to you.
 // =============================================================================
+//
+// HOW TO TEST (before you trust it with anything irreversible)
+//   A PreToolUse hook just reads a JSON payload on stdin and uses its exit code.
+//   So you can test it directly from a shell by piping a sample payload in.
+//   First fill in a real protected path in PROTECTED_PATHS above, then:
+//
+//   Expect BLOCK (exit 2, message on stderr):
+//     echo '{"tool_name":"Write","tool_input":{"file_path":"<PROTECTED_PATH_1>/x.txt"}}' | node protect-paths.js ; echo "exit=$?"
+//
+//   Expect ALLOW (no output, exit 0):
+//     echo '{"tool_name":"Write","tool_input":{"file_path":"/tmp/ok.txt"}}' | node protect-paths.js ; echo "exit=$?"
+//
+//   Expect ALLOW (exit 0) for a non-write tool, even on a protected path:
+//     echo '{"tool_name":"Read","tool_input":{"file_path":"<PROTECTED_PATH_1>/x.txt"}}' | node protect-paths.js ; echo "exit=$?"
+//
+//   On Windows PowerShell, use single quotes around the JSON and pipe similarly.
+//   If the BLOCK case does not exit 2, do NOT wire this hook up yet — fix it first.
+// =============================================================================

@@ -1,0 +1,19 @@
+{
+  "env": {},
+  "permissions": {
+    "allow": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "<TOOLS_TO_INTERCEPT — e.g. Write|Edit|MultiEdit>",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ~/.claude/hooks/<HOOK_FILENAME>.js"
+          }
+        ]
+      }
+    ]
+  }
+}

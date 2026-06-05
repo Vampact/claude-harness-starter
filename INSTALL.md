@@ -8,11 +8,11 @@ This repo is intentionally **not** exhaustive or polished. The modules in `examp
 
 ---
 
-## Step 0 — Detect the user's language
+## Step 0 — Detect the conversation language (and don't confuse it with a rule)
 
-Look at the language of the user's most recent messages and **run the entire install conversation in that language.** If they wrote to you in Korean, interview them in Korean; if Spanish, Spanish; and so on. The repo's documents are in English, but the conversation should meet the user where they are.
+Look at the language of the user's most recent messages and **run the entire install conversation in that language.** If they wrote to you in Korean, interview them in Korean; if Spanish, Spanish. Do not announce this — just do it.
 
-Do not announce this — just do it.
+**Important distinction:** the language you *converse* in is **not** necessarily the always-on language rule you will write into their `CLAUDE.md` (the `<YOUR_LANGUAGE>` placeholder in the router example). A user might message you in English now but want Claude to always reply to them in Korean — or vice versa. **Do not infer the `<YOUR_LANGUAGE>` rule from the message language. Ask for it explicitly** when you build the router (Step 3).
 
 ---
 
@@ -30,37 +30,67 @@ If anything in those docs conflicts with what the user tells you about their set
 
 ---
 
-## Step 2 — Interview: environment and goals
+## Step 2 — Locate the install target and inspect existing config
 
-Ask a small number of focused questions (an `AskUserQuestion`-style multiple-choice prompt works well — keep it to one screen). Cover:
+Before interviewing, settle two practical facts. A real install fails at the "last mile" when these are skipped.
 
-- **Where do you run Claude Code?** CLI / desktop app / both / remote (SSH, devcontainer, etc.). This affects which hooks and shell assumptions make sense.
-- **What do you work on?** Primary language/stack; solo vs team; mostly private vs public repos. This shapes which `rules/common/` examples are worth offering.
-- **Folder habits.** Do you keep one work hub, make a fresh folder per project, or work mostly on remote machines? **Do not push any of these as correct** — just learn their style so your later proposals fit it.
-- **Multiple devices?** Do you use Claude Code on two or more machines? If yes, a sync module becomes relevant (see Step 3, sync). If no, skip path/IP/device modules entirely — they are meaningless on a single machine.
-- **Existing `~/.claude/` setup?** Do they already have a `CLAUDE.md`, `settings.json`, rules, or hooks? If yes, you must merge rather than overwrite (see Step 5).
+1. **Where is `~/.claude/`?** It is the user-level Claude Code config directory in the user's home folder (`~/.claude/` on macOS/Linux, `%USERPROFILE%\.claude\` on Windows). Confirm the actual path on this machine — do not assume.
+2. **What is already there?** **Inspect the directory yourself** — list `~/.claude/` and read any existing `CLAUDE.md`, `settings.json`, `rules/`, and `hooks/`. Do not rely solely on the user's memory of what they have.
+
+There is a real tension here — be consent-driven and not nosy, versus verify before you overwrite. Resolve it this way: **you may read existing config to avoid destroying it, but you still install nothing without consent.** Reading to protect is not the same as writing without permission. If the user said "I have nothing" but you find a `settings.json`, surface that gently and switch to merge mode (Step 6).
+
+---
+
+## Step 3 — Interview: environment and goals
+
+Ask a small number of focused questions. A single one-screen, multiple-choice prompt (`AskUserQuestion`-style) works well **for this interview step** — it gathers context in one pass. (Note: this batch style is for the interview only. Module *proposals* in Step 4 go one at a time — do not dump all modules into one multiple-choice screen.)
+
+Cover:
+
+- **Always-on language.** What language should Claude reply in by default? (This fills `<YOUR_LANGUAGE>` — ask, per Step 0; don't infer it.)
+- **Where do you run Claude Code?** CLI / desktop app / both / remote (SSH, devcontainer, etc.). Affects which hooks and shell assumptions make sense.
+- **What do you work on?** Primary language/stack; solo vs team; mostly private vs public repos. Shapes which `rules/common/` examples are worth offering.
+- **Folder habits.** One work hub, fresh folder per project, or remote-first? **Do not push any of these as correct** — just learn their style so your later proposals fit it.
+- **Multiple devices?** Two or more machines? If yes, a sync module becomes relevant (see Step 4, sync). If no, skip path/IP/device modules entirely — they are meaningless on a single machine.
+- **Existing setup** — you already inspected this in Step 2; confirm with the user and flag anything you'll need to merge.
 
 Keep it conversational. You do not need every answer before proposing the first module — but you do need enough to avoid recommending something irrelevant.
 
 ---
 
-## Step 3 — Propose modules one at a time, install only on consent
+## Step 4 — Propose modules one at a time, install only on consent
 
-For each candidate module, present it in roughly this shape:
+For each candidate module, present it **individually** (not batched) in roughly this shape:
 
 > **[Module name]** — *what it does.* In your case (because you said X), I'd **recommend / not recommend** this, because *reason*. Want to add it?
 
-- **Agree →** install it, then fill its placeholders together (Step 4).
+- **Agree →** install it, then fill its placeholders together (Step 5), and **deploy it correctly** (see the hook-deployment notes below where relevant).
 - **Decline →** skip it, move on. No pressure, no re-pitching.
 
 Go in an order that respects dependencies. A reasonable default order:
 
-1. **The router itself** (`CLAUDE.md`). This is the foundation — everything else hangs off it. Start from [examples/CLAUDE.md.example](examples/CLAUDE.md.example) and build a minimal router with the user.
+1. **The router itself** (`CLAUDE.md`). The foundation — everything else hangs off it. Build a minimal router *with* the user from [examples/CLAUDE.md.example](examples/CLAUDE.md.example). Ask for the `<YOUR_LANGUAGE>` and tone values here.
 2. **`rules/common/` examples** — language-agnostic standards (e.g. coding style). Offer the one or two that match their stack.
-3. **`rules/personal/critical/` + a paired hook** — a deterministic guardrail. Explain *why* it needs a hook: behavior rules alone leak, so a `PreToolUse`/`Stop` hook is the real defense. Only offer guardrails the user actually wants enforced.
+3. **`rules/personal/critical/` + a paired hook** — a deterministic guardrail. Explain *why* it needs a hook: behavior rules alone leak, so a `PreToolUse`/`Stop` hook is the real defense. **Deploying a hook has mechanical steps — see "Deploying a hook" below.** Only offer guardrails the user actually wants enforced.
 4. **`rules/personal/workflow/`** — procedural rules loaded on a trigger.
 5. **`rules/personal/environment/`** — device/environment facts. **Gate this behind the multi-device answer and the sync prerequisite below.**
 6. **A skill** — for any deep, multi-step procedure the user described.
+
+### Deploying a hook (do not skip these steps)
+
+A hook is not "installed" just by copying a rule. To make it actually run:
+
+1. **Copy the script** from `examples/hooks/<name>.example.js` into the user's `~/.claude/hooks/`, and **rename it to drop `.example`** (e.g. `protect-paths.js`). The example filename is not the runtime filename.
+2. **Confirm the runtime exists.** The example hooks are Node.js — verify `node` is installed and on PATH (`node --version`). If the user has no Node, the hook cannot run; say so rather than wiring a dead hook.
+3. **Wire it into `settings.json`** — see "Editing `settings.json`" below. The `command` must point at the deployed path (`~/.claude/hooks/protect-paths.js`), not the repo's `examples/` copy.
+4. **Test it before trusting it.** A guardrail you never verified is not a guardrail. See the test recipe at the bottom of [examples/hooks/protect-paths.example.js](examples/hooks/protect-paths.example.js): pipe a sample payload to the script and confirm it blocks (exit 2) the protected path and allows (exit 0) a normal one.
+
+### Editing `settings.json`
+
+`settings.json` is where hooks, permissions, and env vars are wired. Use [examples/settings.json.example](examples/settings.json.example) and [templates/settings.json.template](templates/settings.json.template) as the shape.
+
+- It is **strict JSON** — no comments, no trailing commas. A file that fails to parse disables your config.
+- If the user already has a `settings.json`, **merge keys; never replace the whole file.** Preserve their existing `hooks`, `permissions`, and `env`. Add your hook entry into the existing `PreToolUse` array rather than overwriting it.
 
 ### The sync prerequisite (important)
 
@@ -84,7 +114,7 @@ A useful thing to say: *"This doesn't exist as a module yet, but we could write 
 
 ---
 
-## Step 4 — Fill placeholders by asking, never by guessing
+## Step 5 — Fill placeholders by asking, never by guessing
 
 Every example is deliberately full of placeholders (`<WORK_HUB>`, `<HOST_IP>`, `<USER>`, `<YOUR_PROJECT>`, etc.). When you install a module:
 
@@ -96,22 +126,23 @@ This is what makes the install a customization and not a copy.
 
 ---
 
-## Step 5 — Handle conflicts with existing config
+## Step 6 — Handle conflicts with existing config
 
-If the user already has a `CLAUDE.md`, `settings.json`, or rules:
+You already inspected the existing config in Step 2. When something is already there:
 
-- **Do not overwrite.** Read the existing file first.
+- **Do not overwrite.** You have already read the existing file.
 - Propose a **merge**: show what you would add and where, and let the user confirm.
 - For `settings.json` specifically, merge keys carefully — never replace the whole file. Preserve their existing hooks, permissions, and env vars.
 - If a genuine conflict exists (e.g. two rules contradict), surface it and let the user decide.
 
 ---
 
-## Step 6 — Verify and summarize
+## Step 7 — Verify and summarize
 
 After installing, give the user a clear picture of what changed:
 
 - List every file you created or modified, with a one-line description of each.
+- Confirm any hooks you deployed are wired into `settings.json` with the correct deployed path, and were tested (Step 4).
 - Note any placeholders still unfilled (there should be none, but check).
 - Point out the trigger lines you added to `CLAUDE.md` so the user knows when each external rule will load.
 - Suggest a first thing to try, so they see the harness working.
@@ -122,4 +153,4 @@ End by reminding them they can grow the setup later — new rules, hooks, and sk
 
 ## A note on imperfect adherence
 
-No model or environment will follow this flow perfectly, and that is expected. Aim for **reasonable adherence**, not mechanical compliance. The non-negotiables are: (1) install only what the user agreed to, (2) never overwrite existing config blindly, (3) fill placeholders by asking. Everything else is guidance you can adapt to the conversation.
+No model or environment will follow this flow perfectly, and that is expected. Aim for **reasonable adherence**, not mechanical compliance. The non-negotiables are: (1) install only what the user agreed to, (2) never overwrite existing config blindly — inspect first, (3) fill placeholders by asking, (4) when you deploy a hook, actually make it runnable (copy, rename, wire, test). Everything else is guidance you can adapt to the conversation.
