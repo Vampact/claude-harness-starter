@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+// <HOOK_NAME> — <PreToolUse | PostToolUse | Stop> hook
+// Purpose: <WHAT_THIS_GUARDRAIL_ENFORCES>
+// Paired rule: <RULE_FILENAME>
+
+const fs = require("fs");
+
+let payload = {};
+try {
+  payload = JSON.parse(fs.readFileSync(0, "utf8"));
+} catch {
+  process.exit(0); // fail open: never wedge the tool on bad input
+}
+
+const toolName = payload.tool_name || payload.tool || "";
+const input = payload.tool_input || payload.input || {};
+
+// ---- Decide whether to block ----
+const shouldBlock = false; // <REPLACE: your condition>
+
+if (shouldBlock) {
+  process.stderr.write("<EXPLANATION_SHOWN_TO_MODEL>\n");
+  process.exit(2); // exit 2 + stderr = BLOCK
+}
+
+process.exit(0); // allow

@@ -1,0 +1,46 @@
+# CLAUDE.md (router example)
+
+# -----------------------------------------------------------------------------
+# This is an EXAMPLE router, not a file to copy verbatim.
+# It shows the shape: a few always-on inline rules at the top, then a set of
+# "trigger lines" that point to external rule files loaded only when relevant.
+# Replace every <PLACEHOLDER> with your own value during install, and delete
+# any section that does not apply to you.
+# See docs/01-concepts.md for the reasoning behind this layout.
+# -----------------------------------------------------------------------------
+
+## 1. Always-on rules (inline)
+
+These are short and apply to essentially every session, so they live here.
+
+- Language: respond in <YOUR_LANGUAGE>.
+- Tone: <YOUR_TONE — e.g. concise and direct / careful and explanatory>.
+- Never do <YOUR_HARD_PROHIBITION — e.g. force-push to the main branch> without explicit confirmation.
+
+## 2. Triggered rules (loaded on demand)
+
+Each entry below is a pointer. The full rule lives in an external file and is
+read only when its trigger situation arises — keeping this router small.
+
+### Coding standards
+> Trigger: writing or reviewing code in <YOUR_STACK>.
+> Read: rules/common/coding-style.md
+
+### Protected paths (absolute — hook-enforced)
+> Trigger: any write/edit operation. The paired hook enforces this regardless.
+> Read: rules/personal/critical/protect-paths.md
+
+### Feature workflow
+> Trigger: starting a new feature, bug fix, or refactor.
+> Read: rules/personal/workflow/feature-workflow.md
+
+### Device & environment
+> Trigger: file transfer, SSH, network drive, or path-specific work across machines.
+> Read: rules/personal/environment/devices.md
+> Note: only relevant if you sync ~/.claude/ across multiple devices. Delete this
+> entry entirely if you use a single machine.
+
+# -----------------------------------------------------------------------------
+# Add a new trigger line here whenever you move a heavy or situational rule out
+# of this router into its own file. Keep this file small on purpose.
+# -----------------------------------------------------------------------------

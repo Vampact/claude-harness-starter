@@ -1,0 +1,12 @@
+# CLAUDE.md
+
+## Always-on rules
+
+- Language: <LANGUAGE>
+- Tone: <TONE>
+
+## Triggered rules
+
+### <RULE_NAME>
+> Trigger: <WHEN_THIS_RULE_APPLIES>
+> Read: rules/<CATEGORY>/<FILENAME>.md

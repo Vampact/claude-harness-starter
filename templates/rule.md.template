@@ -1,0 +1,17 @@
+# <RULE_TITLE>
+
+> Trigger: <WHEN_THIS_RULE_APPLIES>
+> Category: <common | personal/critical | personal/workflow | personal/environment>
+> Paired hook: <HOOK_FILENAME or "none">
+
+## The rule
+
+<STATE_THE_RULE>
+
+## Why
+
+<WHY_IT_EXISTS>
+
+## How it is enforced
+
+<MODEL_COOPERATION or "PreToolUse/Stop hook: HOOK_FILENAME">

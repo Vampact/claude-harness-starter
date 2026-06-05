@@ -1,0 +1,24 @@
+---
+name: <SKILL_NAME>
+description: <SPECIFIC_TRIGGER_DESCRIPTION — what makes Claude invoke this>
+---
+
+# <SKILL_TITLE>
+
+## When to use
+
+<WHEN_THIS_APPLIES>
+
+## Prerequisites
+
+<PREREQUISITES>
+
+## Steps
+
+1. <STEP_1>
+2. <STEP_2>
+3. Verify: <HOW_TO_VERIFY_SUCCESS>
+
+## Failure handling
+
+<RECOVERY_OR_ROLLBACK>
