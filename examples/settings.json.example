@@ -1,7 +1,5 @@
 {
-  "env": {
-    "EXAMPLE_FLAG": "1"
-  },
+  "env": {},
   "permissions": {
     "allow": [
       "Bash(git status)",
@@ -12,6 +10,7 @@
     "PreToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "description": "Block writes to protected paths (pairs with rules/personal/critical/protect-paths.md)",
         "hooks": [
           {
             "type": "command",

@@ -1,6 +1,6 @@
 # <RULE_TITLE>
 
-> Trigger: <WHEN_THIS_RULE_APPLIES>
+> Trigger: <WHEN_THIS_RULE_APPLIES — name a concrete situation with a clear on/off boundary. Too broad ("working on the backend") loads it every turn and saves nothing; too narrow misses cases it should cover. Aim for something like "writing SQL migrations".>
 > Category: <common | personal/critical | personal/workflow | personal/environment>
 > Paired hook: <HOOK_FILENAME or "none">
 

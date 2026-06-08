@@ -22,8 +22,13 @@ These are short and apply to essentially every session, so they live here.
 Each entry below is a pointer. The full rule lives in an external file and is
 read only when its trigger situation arises — keeping this router small.
 
+A good trigger names a concrete situation with a clear on/off boundary: broad
+enough to fire whenever the rule matters, narrow enough that it does not load on
+every turn. "Writing SQL migrations" is a usable trigger; "working on the
+backend" is too broad to save anything.
+
 ### Coding standards
-> Trigger: writing or reviewing code in <YOUR_STACK>.
+> Trigger: writing or reviewing <YOUR_STACK> code — not docs, config, or one-off scripts.
 > Read: rules/common/coding-style.md
 
 ### Protected paths (absolute — hook-enforced)
