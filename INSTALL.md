@@ -24,7 +24,7 @@ Before talking to the user, read enough of this repo to give grounded advice:
 - [docs/01-concepts.md](docs/01-concepts.md) — why the router pattern exists.
 - [docs/02-architecture.md](docs/02-architecture.md) — the `.claude/` layout.
 - [docs/03-customization-guide.md](docs/03-customization-guide.md) — the decision branches (this is your interview script's backbone).
-- Skim [examples/](examples/) so you can describe each module concretely.
+- Skim [examples/](examples/) so you can describe each module concretely. If you only have time for a few, read these first: [examples/CLAUDE.md.example](examples/CLAUDE.md.example) (the router shape), [examples/settings.json.example](examples/settings.json.example) (how hooks, permissions, and env are wired), and [examples/hooks/protect-paths.example.js](examples/hooks/protect-paths.example.js) alongside its paired rule [examples/rules/personal/critical/protect-paths.md](examples/rules/personal/critical/protect-paths.md) (how a rule and its enforcing hook fit together).
 
 If anything in those docs conflicts with what the user tells you about their setup, **trust the user.**
 
@@ -39,11 +39,13 @@ Before interviewing, settle two practical facts. A real install fails at the "la
 
 There is a real tension here — be consent-driven and not nosy, versus verify before you overwrite. Resolve it this way: **you may read existing config to avoid destroying it, but you still install nothing without consent.** Reading to protect is not the same as writing without permission. If the user said "I have nothing" but you find a `settings.json`, surface that gently and switch to merge mode (Step 6).
 
+A special case worth naming: an existing **large, kitchen-sink `CLAUDE.md`** — the very thing the router pattern is meant to improve on. Do not silently rewrite it. Offer two paths and let the user pick: **(a) leave it as-is** and only append a few trigger lines pointing at the new external rules, or **(b) migrate it to the router pattern** — move heavy sections out into `rules/` files and slim the `CLAUDE.md` down to inline essentials plus triggers. Migration is more work and more valuable; some users want it, others just want the new rule added without disturbing what works. Never assume which — propose both and respect the choice.
+
 ---
 
 ## Step 3 — Interview: environment and goals
 
-Ask a small number of focused questions. A single one-screen, multiple-choice prompt (`AskUserQuestion`-style) works well **for this interview step** — it gathers context in one pass. (Note: this batch style is for the interview only. Module *proposals* in Step 4 go one at a time — do not dump all modules into one multiple-choice screen.)
+Ask a small number of focused questions. If your harness has a one-screen multiple-choice prompt (Claude Code's `AskUserQuestion`, or any equivalent), it works well **for this interview step** — it gathers context in one pass. If it does not, a short numbered list the user can answer in a single message does the same job. (Note: this batch style is for the interview only. Module *proposals* in Step 4 go one at a time — do not dump all modules into one multiple-choice screen.)
 
 Cover:
 
@@ -51,7 +53,7 @@ Cover:
 - **Where do you run Claude Code?** CLI / desktop app / both / remote (SSH, devcontainer, etc.). Affects which hooks and shell assumptions make sense.
 - **What do you work on?** Primary language/stack; solo vs team; mostly private vs public repos. Shapes which `rules/common/` examples are worth offering.
 - **Folder habits.** One work hub, fresh folder per project, or remote-first? **Do not push any of these as correct** — just learn their style so your later proposals fit it.
-- **Multiple devices?** Two or more machines? If yes, a sync module becomes relevant (see Step 4, sync). If no, skip path/IP/device modules entirely — they are meaningless on a single machine.
+- **Multiple devices?** Two or more machines? If yes, ask a follow-up right away: **is `~/.claude/` already synced between them** (a dotfiles repo, cloud drive, etc.), or not yet? This answer is the gate for the environment modules — if sync already exists you can go straight to them; if not, sync is the prerequisite to propose *first* (see Step 4, sync). Surfacing this early avoids pitching device/path modules that cannot work until sync is in place. If they are on a single machine, skip path/IP/device modules entirely — they are meaningless there.
 - **Existing setup** — you already inspected this in Step 2; confirm with the user and flag anything you'll need to merge.
 
 Keep it conversational. You do not need every answer before proposing the first module — but you do need enough to avoid recommending something irrelevant.
@@ -82,7 +84,7 @@ A hook is not "installed" just by copying a rule. To make it actually run, **in 
 
 1. **Copy the script** from `examples/hooks/<name>.example.js` into the user's `~/.claude/hooks/`, and **rename it to drop `.example`** (e.g. `protect-paths.js`). The example filename is not the runtime filename.
 2. **Fill the hook's own real values FIRST.** Many hooks have internal placeholders (e.g. `protect-paths.js` has a `PROTECTED_PATHS` list of `<PROTECTED_PATH_1>` tokens). Ask the user and replace these with real values *before* testing. This ordering matters: the example hook deliberately treats any path still starting with `<` as inert, so a test against an unfilled placeholder will **falsely pass (allow)** and give false confidence.
-3. **Confirm the runtime exists.** The example hooks are Node.js — verify `node` is installed and on PATH (`node --version`). If the user has no Node, the hook cannot run; say so rather than wiring a dead hook.
+3. **Confirm the runtime exists.** The example hooks are Node.js — verify `node` is installed and on PATH (`node --version`). If the user has no Node, the hook cannot run; do not wire a dead hook. Offer the choices instead of deciding for them: **(a)** skip the hook and keep the rule as a model-cooperation rule only — being honest that this is a weaker, non-deterministic guarantee; **(b)** install Node, if they are willing; or **(c)** port the hook to a runtime they already have (the logic is small — read a JSON payload from stdin, exit non-zero to block). Let the user pick.
 4. **Test it before trusting it.** A guardrail you never verified is not a guardrail. Using the now-filled real paths, follow the test recipe at the bottom of [examples/hooks/protect-paths.example.js](examples/hooks/protect-paths.example.js): pipe a sample payload and confirm it blocks (exit 2) a protected path and allows (exit 0) a normal one. The recipe shows both a bash/Git-Bash and a PowerShell 7 form — use the one matching the user's shell.
 5. **Wire it into `settings.json`** *last, after the test passes* — see "Editing `settings.json`" below. The `command` must point at the deployed path (`~/.claude/hooks/protect-paths.js`), not the repo's `examples/` copy.
 
@@ -148,7 +150,7 @@ After installing, give the user a clear picture of what changed:
 - Point out the trigger lines you added to `CLAUDE.md` so the user knows when each external rule will load.
 - Suggest a first thing to try, so they see the harness working.
 
-End by reminding them they can grow the setup later — new rules, hooks, and skills are all just files they (with your help) can add.
+End by reminding them they can grow the setup later — new rules, hooks, and skills are all just files they (with your help) can add. Point them to [docs/05-using-your-harness.md](docs/05-using-your-harness.md) for operating it on their own afterward — confirming triggers fire, adding or muting rules, and changing hooks.
 
 ---
 
