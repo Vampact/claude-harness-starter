@@ -51,7 +51,8 @@ claude-harness-starter/
 │   ├── 01-concepts.md         # 라우터 패턴의 이유; 본문 직접 vs 외부 분리
 │   ├── 02-architecture.md     # .claude/ 구성과 각 디렉터리의 역할
 │   ├── 03-customization-guide.md  # 의사결정 가이드 — 특정 취향을 강요하지 않음
-│   └── 04-references.md       # 참고 자료
+│   ├── 04-references.md       # 참고 자료
+│   └── 05-using-your-harness.md  # 설치 후 사용·유지
 ├── examples/                  # 빈칸 위주의 예시 (참고용, 복붙 금지)
 └── templates/                 # 채워 넣을 빈 템플릿
 ```
@@ -61,6 +62,7 @@ claude-harness-starter/
 - 처음 접하는 분은 [docs/01-concepts.md](docs/01-concepts.md)부터 시작하세요.
 - 지금 바로 설치하고 싶다면, 레포 URL을 Claude에게 건네거나 [INSTALL.md](INSTALL.md)를 읽어 Claude가 무엇을 할지 미리 확인하세요.
 - 설계 배경이 궁금하다면 [docs/02-architecture.md](docs/02-architecture.md)와 [docs/03-customization-guide.md](docs/03-customization-guide.md)를 참고하세요.
+- 설치를 마친 뒤 운영(트리거 확인·규칙 추가/제거·훅 수정)은 [docs/05-using-your-harness.md](docs/05-using-your-harness.md)를 참고하세요.
 
 ## 크레딧
 
@@ -109,7 +111,8 @@ claude-harness-starter/
 │   ├── 01-concepts.md         # Why the router pattern; inline vs external
 │   ├── 02-architecture.md     # The .claude/ layout and each directory's role
 │   ├── 03-customization-guide.md  # Decision guide — no taste forced on you
-│   └── 04-references.md       # Further reading
+│   ├── 04-references.md       # Further reading
+│   └── 05-using-your-harness.md  # Operating it after install
 ├── examples/                  # Placeholder-heavy examples (cite, don't copy)
 └── templates/                 # Empty skeletons to fill in
 ```
@@ -119,6 +122,7 @@ claude-harness-starter/
 - New to the idea? Start with [docs/01-concepts.md](docs/01-concepts.md).
 - Want to install now? Hand the repo URL to Claude, or read [INSTALL.md](INSTALL.md) to see what Claude will do.
 - Curious about the design? See [docs/02-architecture.md](docs/02-architecture.md) and [docs/03-customization-guide.md](docs/03-customization-guide.md).
+- Already installed? Day-to-day operation (checking triggers, adding or muting rules, changing hooks) is in [docs/05-using-your-harness.md](docs/05-using-your-harness.md).
 
 ## Credits & prior art
 
